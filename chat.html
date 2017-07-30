@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style>
+		#chalkboard{
+		position:absolute;
+		top:200px;
+		left:0;
+		background: url('./image/bg.png') repeat;
+		cursor:url('./image/cd_spinsword.cur'),auto;
+		display: none;
+		}
+		#chalkup{
+		position:absolute;
+		top:200px;
+		left:0;
+		background: url('./image/bg.png') repeat;
+		display: none;
+		}
+		.down{
+		cursor:url('./image/cd_crosshairs.cur'),auto!important;
+		}
+		#colorbox{
+			float:left;
+			width: 100px;
+			height: 50px;
+			position: absolute;
+			top:730px;
+			margin-right: 3px;
+		 background: -webkit-linear-gradient(left,red,purple,blue,green,cyan);
+  /* Opera 11.1 - 12.0 */
+  background: -o-linear-gradient(left,red,purple,blue,green,cyan);
+  /* Firefox 3.6 - 15 */
+  background: -moz-linear-gradient(left,red,purple,blue,green,cyan);
+  /* 标准的语法 */
+  background: linear-gradient(to right, red,purple,blue,green,cyan); 
+  display: none;
+		}
+		#colorl li{
+			margin-top: 715px;
+			float: left;
+			width: 60px;
+			height: 30px;
+			margin-right:3px;
+			display: none;
+		}
+		#colorl li:nth-child(1){
+			margin-left:60px;
+			background: red;
+		}
+		#colorl li:nth-child(2){
+			background: purple;
+		}
+		#colorl li:nth-child(3){
+			background: blue;
+		}
+		#colorl li:nth-child(4){
+			background: green;
+		}
+		#colorl li:nth-child(5){
+			background: cyan;
+		}
+		#colorl li:nth-child(6){
+			background: white;
+			border: 1px solid black;
+		}
+		.mydiv{
+			position: relative;
+			top:180px;
+			width: 445px;
+			height: 510px;
+			margin: 0 auto;
+			background: url("./image/Image 2.png") no-repeat;
+			background-size:100% 100%;
+		}
+		li{
+			list-style: none;
+		}
+
+		#texta{
+			width:99%;
+			height: 76px;
+			-webkit-appearance: textarea;
+		    background-color: transparent;
+		    -webkit-rtl-ordering: logical;
+		    user-select: text;
+		    flex-direction: column;
+		    resize: auto;
+		    cursor: auto;
+		    white-space: pre-wrap;
+		    word-wrap: break-word;
+		    padding: 2px;
+		    border: none;
+		}
+		#chat_conatiner{
+			position: absolute;
+			top:82px;
+			width: 98%;
+			max-height: 272px;
+			overflow-y: auto;
+			padding-left:2px;
+		}
+		::-webkit-scrollbar  
+{  
+    width: 16px;  
+    height: 16px;  
+    background-color: #F5F5F5;  
+}  
+  
+/*定义滚动条轨道 内阴影+圆角*/  
+::-webkit-scrollbar-track  
+{  
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);  
+    border-radius: 10px;  
+    background-color: #F5F5F5;  
+}  
+  
+/*定义滑块 内阴影+圆角*/  
+::-webkit-scrollbar-thumb  
+{  
+    border-radius: 10px;  
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);  
+    background-color: #555;  
+}  
+		button{
+			width: 78px;
+			height: 30px;
+			float: right;
+			border-radius: 12%;
+			margin-top:-10px;
+			margin-right: 5px;
+			color: #FFFFFF;
+			background: #4c7cb1;
+			font-family: "微软雅黑";
+		}
+		h3{
+			color:darkcyan;
+			font-size:14px;
+		}
+		p{
+			color: darkgoldenrod;
+		}
+		.content{
+			width: 100%;
+			height: 400px;
+		}
+		</style>
+	</head>
+	<body>
+	
+			
+			<canvas id="chalkboard" width="500" height="500" style="border:1px solid black"></canvas>
+			<div id="chalkup" width="500" height="500" style="border:1px solid black">
+			<img  width="500" height="500" id="imga">
+			</div>
+			<div>
+			<button id="colorbox">
+				
+			</button>
+			<ul id="colorl">
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+			</ul>
+			</div>
+		<div class="mydiv">
+			<div class="content" id="chat">
+				<ul id="chat_conatiner">
+					<li id="howmany"></li>
+				</ul>
+			</div>
+			<div class="action">
+				<textarea name="texta" id="texta"></textarea>
+				<button class="btn btn-success" id="send">发送(S)</button>
+				<button class="btn btn-success" id="draw">作画(C)</button>
+			</div>
+			<a href="www.baidu.com">ddddd</a>
+		</div>
+		<script type="text/javascript" src="js/socket.io.js"></script>
+		<script type="text/javascript" src="js/jquery-3.0.0.min.js"></script>
+    	<script type="text/javascript">
+
+          var ws = io.connect('http://www.hxl520.cn:8080');
+          var sendMsg = function(msg){
+              ws.emit('send.message', msg);
+          }
+          var addMessage = function(from, msg){
+              var li = document.createElement('li');
+              li.innerHTML = '<span>' + from + '</span>' + ' : ' + msg;
+              document.querySelector('#chat_conatiner').appendChild(li);
+              document.querySelector('#chat').scrollTop = document.querySelector('#chat').scrollHeight;
+              document.querySelector('textarea').focus();
+          }
+         
+          var send = function(){
+              var ele_msg = document.querySelector('textarea');
+              var msg = ele_msg.value.replace('\r\n', '').trim();
+              console.log(msg);
+              if(!msg) return;
+              sendMsg(msg);
+              // 添加消息到自己的内容区
+              addMessage('你', msg);
+              ele_msg.value = '';
+          }
+          ws.on('howmany',function(howmany){
+          		document.querySelector('#howmany').innerHTML='系统：当前在线人数为'+howmany;
+          		console.log(howmany);
+          })
+          ws.on('connect', function(){
+              var nickname = window.prompt('输入你的昵称!');
+              while(!nickname){
+                  nickname = window.prompt('昵称不能为空，请重新输入!')
+              }
+              ws.emit('join', nickname);
+          });
+
+          // 昵称有重复
+          ws.on('nickname', function(){
+              var nickname = window.prompt('昵称有重复，请重新输入!');
+              while(!nickname){
+                  nickname = window.prompt('昵称不能为空，请重新输入!')
+              }
+              ws.emit('join', nickname);
+          });
+
+          ws.on('send.message', function(from, msg){
+              addMessage(from, msg);
+          });
+
+          ws.on('announcement', function(from, msg){
+              addMessage(from, msg);
+          });
+          ws.on('draw',function(from){
+          	  addMessage('系统',from+'开始作画了');
+          	  document.querySelector('#colorbox').style.display='none';
+          	  document.querySelector('#chalkboard').style.display='none';
+          	  document.querySelector('#chalkup').style.display='block';
+          })
+          ws.on('newImg',function(data){
+          	$('#imga').attr('src',data);
+          })
+          document.querySelector('textarea').addEventListener('keypress', function(event){
+              if(event.which == 13){
+                  send();
+              }
+          });
+          document.querySelector('textarea').addEventListener('keydown', function(event){
+              if(event.which == 13){
+                  send();
+              }
+          });
+          document.querySelector('#send').addEventListener('click', function(){
+              send();
+          });
+          document.querySelector('#draw').addEventListener('click',function(){
+          		ws.emit('draw');
+          		document.querySelector('#colorbox').style.display='block';
+          		document.querySelector('#chalkboard').style.display='block';
+          		document.querySelector('#chalkup').style.display='none';
+          		addMessage('系统','你开始作画了');
+          })
+
+
+
+
+			var canvas = document.getElementById("chalkboard");
+			var ctx=canvas.getContext("2d");
+			var width = canvas.width;
+			var height = canvas.height;
+			var mouseX = 0;
+			var mouseY = 0;
+			var mouseD = false;
+			var eraser = false;
+			var xLast = 0;
+			var yLast = 0;
+			var brushDiameter = 5;
+			var eraserWidth = 22;
+			var eraserHeight = 22;
+			ctx.strokeStyle='blue';
+			var pushimg;
+			var urlLast;
+			ctx.fillStyle = 'blue';
+			ctx.strokeStyle = 'blue';	
+
+			$('#colorbox').click(function(){
+				$(this).attr('disabled',true);
+				$('#colorl li').each(function(index,item){
+					setTimeout(function(){
+						$(item).css('display','inline-block');
+						$(item).css('cursor','none');
+					},200*index);
+					setTimeout(function(){
+						$('#colorl li').css('cursor','default');
+						$(item).click(function(){
+							clearTimeout();	
+							ctx.fillStyle=ctx.strokeStyle=$(item).css('background-color');
+							$('#colorl li').animate({opacity:0},300,function(){
+								$(this).css('display','none').css('opacity',1);
+								$('#colorbox').attr('disabled',false);
+							})
+						})
+					},1200)
+				})
+			})
+			function push(){
+        		pushimg=setInterval(function(){
+        			console.log('发送');
+        			ws.emit('drew',canvas.toDataURL());
+        			urlLast=canvas.toDataURL();
+        		},100)
+        	}
+			// ctx.fillStyle = 'rgba(255,255,255,0.5)';	
+			// ctx.strokeStyle = 'rgba(255,255,255,0.5)';	
+		// 	var patImg = document.getElementById('pattern');
+
+		// 	// document.addEventListener('touchmove', function(evt) {
+		//  //        var touch = evt.touches[0];
+		//  //        mouseX = touch.pageX;
+		//  //        mouseY = touch.pageY;
+		//  //        if (mouseY < height && mouseX < width) {
+		//  //            evt.preventDefault();
+		//  //            $('.chalk').css('left', mouseX + 'px');
+		//  //            $('.chalk').css('top', mouseY + 'px');
+		//  //            //$('.chalk').css('display', 'none');
+		//  //            if (mouseD) {
+		//  //                draw(mouseX, mouseY);
+		//  //            }
+		//  //        }
+		//  //    }, false);
+		//  //    document.addEventListener('touchstart', function(evt) {
+		//  //        //evt.preventDefault();
+		//  //        var touch = evt.touches[0];
+		//  //        mouseD = true;
+		//  //        mouseX = touch.pageX;
+		//  //        mouseY = touch.pageY;
+		//  //        xLast = mouseX;
+		//  //        yLast = mouseY;
+		//  //        draw(mouseX + 1, mouseY + 1);
+		//  //    }, false);
+		//  //    document.addEventListener('touchend', function(evt) {
+		//  //        mouseD = false;
+		//  //    }, false);
+		    ctx.lineWidth = brushDiameter;
+			ctx.lineCap = 'round';
+
+				$('#chalkboard').mousemove(function(event){
+					
+				mouseX=event.pageX;
+				mouseY=event.pageY-200;
+					if(mouseD){
+						if(eraser){
+							erase(mouseX,mouseY);
+						}else{
+							draw(mouseX,mouseY);
+							}
+						}
+			})
+
+			canvas.onmousedown=function(evt){
+				
+				push();
+				mouseD = true;
+				xLast = mouseX;
+				yLast = mouseY;
+				if(evt.button == 2){
+					canvas.className='down';
+					erase(mouseX,mouseY);
+					eraser = true;
+				}else{	
+				}
+			}
+
+			canvas.onmouseup=function(evt){ 
+				canvas.className='';
+				mouseD = false;
+				console.log('松掉');
+				setTimeout(function(){clearInterval(pushimg);},100);
+				if(evt.button == 2){
+					eraser = false;
+					
+				}
+			};
+			$('#chalkboard').mouseleave(function(){
+				console.log('离开');
+				mouseD = false;
+				setTimeout(function(){clearInterval(pushimg);},100);
+			})
+			document.onselectstart = function(){ return false; };
+			$(document).keyup(function(evt){
+				if(evt.keyCode == 32){
+					ctx.clearRect(0,0,width,height);
+					layPattern();
+				}
+			});
+
+			$(document).keyup(function(evt){
+				if(evt.keyCode == 83){
+					changeLink();
+				}
+			});
+
+			document.oncontextmenu = function() {return false;};
+		         // '+(100+Math.random()*0.2)+'
+			function draw(x,y){
+				ctx.beginPath();
+		  		ctx.moveTo(xLast,yLast);		
+		  		ctx.lineTo(x,y);
+		  		ctx.stroke();
+		  		// Chalk Effect
+				var length = Math.round(Math.sqrt(Math.pow(x-xLast,2)+Math.pow(y-yLast,2))/(5/brushDiameter));
+				var xUnit = (x-xLast)/length;
+				var yUnit = (y-yLast)/length;
+				for(var i=0; i<length; i++ ){
+					var xCurrent = xLast+(i*xUnit);	
+					var yCurrent = yLast+(i*yUnit);
+					}
+				xLast = x;
+				yLast = y;
+			}
+
+			function erase(x,y){
+				ctx.clearRect (x-0.5*eraserWidth,y-0.5*eraserHeight,eraserWidth,eraserHeight);
+			}
+			$('.link').click(function(evt){
+				if($('#colorlist').hasClass('none')){
+					$('#colorlist').removeClass('none').addClass('block');
+				}else{
+					$('#colorlist').removeClass('block').addClass('none');
+				}
+			})
+			$('#colorlist li').each(function(){
+				$(this).click(function(evt){
+					colornow=$(this).css('background-color');
+					$('#colorlist').removeClass('block').addClass('none');
+				})
+			})   
+    </script>
+	</body>
+</html>
